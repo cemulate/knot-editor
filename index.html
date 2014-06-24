@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+
+<title>Foundation 4</title>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+
+<link rel="stylesheet" href="/static/foundation-5.0.2/css/foundation.css">
+<script src="/static/foundation-5.0.2/js/vendor/custom.modernizr.js"></script>
+
+<script src="http://code.createjs.com/easeljs-0.7.0.min.js"></script>
+<script src="/static/CoordinateSystemE.js"></script>
+<script src="/static/util.js"></script>
+<script src="/static/KnotVertex.js"></script>
+<script src="/static/KnotEdge.js"></script>
+<script src="/static/Application.js"></script>
+
+<script>
+
+	$(document).ready(function() {
+
+		$(window).trigger("resize")
+
+		stage = new createjs.Stage("stage")
+
+		app = new Application(stage, $("#stage").width(), $("#stage").height())
+		
+	})
+
+	$(window).resize(function() {
+
+		$("#stage").width($(window).innerWidth())
+		$("#stage").height($(window).innerHeight())
+
+		// Setting the "CSS" width/height only scales/stretches the canvas. We need to set its raw width/height
+		// to set the "number of pixels" in the canvas
+		
+		$("#stage").get(0).width = $("#stage").width()
+		$("#stage").get(0).height = $("#stage").height()
+
+	})
+
+</script>
+
+</head>
+
+
+<body>
+
+	<!-- CODE -->
+
+	<canvas id="stage" style="margin:0;
+	   padding:0; 
+       position:absolute; 
+       top:0; 
+       left:0">
+	</canvas>
+
+
+	<script src="/static/foundation-5.0.2/js/foundation.min.js"></script>
+
+	<script>
+		$(document).foundation();
+ 	</script>
+
+
+</body>
+</html>
