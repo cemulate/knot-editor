@@ -9,9 +9,14 @@ function KnotVertex() {
 		cornerRadius: 0.35,
 		cornerColor: "#0000FF"
 	}
-}
 
-// Events: pressedVertexCorner
+	this.state = {
+		name: "normal",
+		params: {}
+	}
+
+	this._timers = {}
+}
 
 KnotVertex.prototype.init = function(container, orient, eventCallbacks) {
 	this.orient = orient
@@ -24,10 +29,63 @@ KnotVertex.prototype.init = function(container, orient, eventCallbacks) {
 	return this
 }
 
-KnotVertex.prototype.setPosition = function(x, y) {
-	this.G.top.x = x
-	this.G.top.y = y
+// *****************************************************************************************************
+//
+// ! Public properties / mutators
+//
+// *****************************************************************************************************
+
+KnotVertex.prototype.setState = function(m) {
+	this.state = m
+	app.stage.update()
 }
+
+KnotVertex.prototype.getState = function() {
+	return this.state
+}
+
+KnotVertex.prototype.setPosition = function(p) {
+	this.G.top.x = p.x
+	this.G.top.y = p.y
+}
+
+KnotVertex.prototype.getPosition = function() {
+	return V(this.G.top.x, this.G.top.y)
+}
+
+KnotVertex.prototype.setOrient = function(o) {
+	this.orient = o
+	this.redraw()
+	app.stage.update()
+}
+
+KnotVertex.prototype.getOrient = function() {
+	return this.orient
+}
+
+KnotVertex.prototype.getPortPosition = function (portNum) {
+	var w = this.gsettings.size
+	var p = this.getPosition()
+	if (portNum == 0) {
+		return p.add(V(w, w))
+	} else if (portNum == 1) {
+		return p.add(V(-w, w))
+	} else if (portNum == 2) {
+		return p.add(V(-w, -w))
+	} else if (portNum == 3) {
+		return p.add(V(w, -w))
+	}
+}
+
+KnotVertex.prototype.redraw = function() {
+	this._drawMain()
+}
+
+// *****************************************************************************************************
+//
+// ! Graphics core
+//
+// *****************************************************************************************************
 
 KnotVertex.prototype._initGraphics = function(container) {
 	var w = this.gsettings.size
@@ -54,22 +112,10 @@ KnotVertex.prototype._initGraphics = function(container) {
 
 	this.G.corners = []
 
-	var cornerMouseover = function(e) {
-		e.target.alpha = 0.5
-		app.stage.update()
-	}
-
-	var cornerMouseout = function(e) {
-		e.target.alpha = 0.0
-		app.stage.update()
-	}
-
 	for (i = 0; i < 4; i ++) {
 		var c = new createjs.Shape()
 		c.alpha = 0.0
 		c.hitArea = new createjs.Shape()
-		c.addEventListener("mouseover", cornerMouseover)
-		c.addEventListener("mouseout", cornerMouseout)
 		this.G.corners.push(c)
 	}
 
@@ -107,14 +153,20 @@ KnotVertex.prototype._drawMain = function() {
 	var gap = w / 5.0
 
 	if (this.orient >= 0) {
-		this.G.main.graphics.ss(SWIDTH).s("black").mt(br.x, br.y).lt(tl.x, tl.y)
-		this.G.main.graphics.ss(SWIDTH).s("black").mt(bl.x, bl.y).lt(-gap, -gap).mt(gap, gap).lt(tr.x, tr.y)
+		this.G.main.graphics.ss(GLOBALS.strokeWidth).s("black").mt(br.x, br.y).lt(tl.x, tl.y)
+		this.G.main.graphics.ss(GLOBALS.strokeWidth).s("black").mt(bl.x, bl.y).lt(-gap, -gap).mt(gap, gap).lt(tr.x, tr.y)
 	} else {
-		this.G.main.graphics.ss(SWIDTH).s("black").mt(bl.x, bl.y).lt(tr.x, tr.y)
-		this.G.main.graphics.ss(SWIDTH).s("black").mt(br.x, br.y).lt(gap, -gap).mt(-gap, gap).lt(tl.x, tl.y)
+		this.G.main.graphics.ss(GLOBALS.strokeWidth).s("black").mt(bl.x, bl.y).lt(tr.x, tr.y)
+		this.G.main.graphics.ss(GLOBALS.strokeWidth).s("black").mt(br.x, br.y).lt(gap, -gap).mt(-gap, gap).lt(tl.x, tl.y)
 	}
 
 }
+
+// *****************************************************************************************************
+//
+// ! Self-reliant graphics logic
+//
+// *****************************************************************************************************
 
 KnotVertex.prototype._configureLogic = function() {
 
@@ -122,29 +174,40 @@ KnotVertex.prototype._configureLogic = function() {
 
 	this.G.main.addEventListener("pressmove", function(e) {
 		var v = app.coordinates.inverseTransform(e.stageX, e.stageY)
-		self.setPosition(v.x, v.y)
+		self.setPosition(v)
 		app.stage.update()
 	})
 
 	for (var i = 0; i < this.G.corners.length; i ++) {
+		this.G.corners[i].addEventListener("mouseover", function(e) {
+			if (self.state.name == "normal") {
+				e.target.alpha = 0.5
+				app.stage.update()	
+			}
+		})
+		
+		this.G.corners[i].addEventListener("mouseout", function(e) {
+			if (self.state.name == "normal") {
+				e.target.alpha = 0.0
+				app.stage.update()
+			}
+		})
+		
 		this.G.corners[i].addEventListener("mousedown", function(e) {
-			var n = self.G.corners.indexOf(e.target)
-			self.eventCallbacks.pressedVertexCorner(n)
+			if (self.state.name == "normal") {
+				var n = self.G.corners.indexOf(e.target)
+				self.eventCallbacks.pressedVertexPort(self, n)
+			}
 		})
 	}
 
+	this._timers.selectionBlink = setInterval(function() {
+		if (self.state.name == "selected") {
+			var c = self.G.corners[self.state.params.selectedPort]
+			c.alpha = (c.alpha == 0) ? 0.5 : 0
+			app.stage.update()
+		}
+	}, 250)
+
 }
 
-KnotVertex.prototype.getPortPosition = function (portNum) {
-	var w = this.gsettings.width
-
-	if (portNum == 0) {
-		return this.position.add(V(w, w))
-	} else if (portNum == 1) {
-		return this.position.add(V(-w, w))
-	} else if (portNum == 2) {
-		return this.position.add(V(-w, -w))
-	} else if (portNum == 3) {
-		return this.position.add(V(w, -w))
-	}
-}
