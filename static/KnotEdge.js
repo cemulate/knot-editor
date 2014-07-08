@@ -76,7 +76,14 @@ KnotEdge.prototype.getCp2 = function() {
 
 KnotEdge.prototype.redraw = function() {
 	this._drawTop()
-	app.stage.update()
+}
+
+KnotEdge.prototype.removeGraphics = function(container) {
+	container.removeChild(this.G.top)
+}
+
+KnotEdge.prototype.moveGraphicsToBack = function(container) {
+	container.setChildIndex(this.G.top, 0)
 }
 
 // *****************************************************************************************************
@@ -100,7 +107,7 @@ KnotEdge.prototype._drawTop = function() {
 	var p2 = null
 	if (this.state.name == "underConstruction") {
 		p2 = this.state.params.endPoint.sub(V(0.3, 0.3))
-	} else {
+	} else if (this.state.name == "normal") {
 		var p2 = this.ends.to.vertex.getPortPosition(this.ends.to.port)
 	}
 
@@ -109,8 +116,8 @@ KnotEdge.prototype._drawTop = function() {
 	var cp3 = null
 	if (this.state.name == "underConstruction") {
 		cp3 = p2
-	} else {
-		cp3 = p2.add(p2.sub(this.ends.to.vertex.position))
+	} else if (this.state.name == "normal") {
+		cp3 = p2.add(p2.sub(this.ends.to.vertex.getPosition()))
 	}
 
 	this.G.top.graphics.clear()

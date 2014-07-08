@@ -18,6 +18,14 @@ function KnotVertex() {
 	this._timers = {}
 }
 
+// *****************************************************************************************************
+//
+// Event Callbacks:
+// 		pressedVertexPort(theVertex, portPressed)
+//		vertexMoved(theVertex)
+//
+// *****************************************************************************************************
+
 KnotVertex.prototype.init = function(container, orient, eventCallbacks) {
 	this.orient = orient
 
@@ -37,7 +45,6 @@ KnotVertex.prototype.init = function(container, orient, eventCallbacks) {
 
 KnotVertex.prototype.setState = function(m) {
 	this.state = m
-	app.stage.update()
 }
 
 KnotVertex.prototype.getState = function() {
@@ -55,8 +62,6 @@ KnotVertex.prototype.getPosition = function() {
 
 KnotVertex.prototype.setOrient = function(o) {
 	this.orient = o
-	this.redraw()
-	app.stage.update()
 }
 
 KnotVertex.prototype.getOrient = function() {
@@ -175,6 +180,7 @@ KnotVertex.prototype._configureLogic = function() {
 	this.G.main.addEventListener("pressmove", function(e) {
 		var v = app.coordinates.inverseTransform(e.stageX, e.stageY)
 		self.setPosition(v)
+		self.eventCallbacks.vertexMoved(self)
 		app.stage.update()
 	})
 

@@ -46,17 +46,36 @@ function Application(stage, realWidth, realHeight) {
 	this.stage.addChild(this.cgrid)
 	this.stage.addChild(this.plane)
 
+	// var cred = new createjs.Shape()
+	// cred.addEventListener("mouseover", function(e) {
+	// 	console.log("red")
+	// })
+	// cred.graphics.beginFill("red").drawCircle(0, 5, 1)
+	// cred.alpha = 0.3
+
+	// var cblue = new createjs.Shape()
+	// cblue.addEventListener("mouseover", function(e) {
+	// 	console.log("blue")
+	// })
+	// cblue.graphics.beginFill("blue").drawCircle(0, 5, 0.8)
+
+	// this.plane.addChild(cblue)
+	// this.plane.addChild(cred)
+	// this.stage.update()
+
 	// ********************************************************
 
 	this.k = new Knot()
 
 	var v = new KnotVertex().init(this.plane, 1, {
-		pressedVertexPort: callbackToMethod(this, this.pressedVertexPort_cb)
+		pressedVertexPort: callbackToMethod(this, this.pressedVertexPort_cb),
+		vertexMoved: callbackToMethod(this, this.vertexMoved_cb)
 	})
 	this.k.vertices.push(v)
 
 	var v2 = new KnotVertex().init(this.plane, 1, {
-		pressedVertexPort: callbackToMethod(this, this.pressedVertexPort_cb)
+		pressedVertexPort: callbackToMethod(this, this.pressedVertexPort_cb),
+		vertexMoved: callbackToMethod(this, this.vertexMoved_cb)
 	})
 	v2.setPosition(V(5, 5))
 	v2.redraw()
@@ -75,39 +94,101 @@ function Application(stage, realWidth, realHeight) {
 
 Application.prototype.pressedVertexPort_cb = function(vertex, portNumber) {
 
-	var p = {}
+	if (this.state.name == "noAction") {
 
-	p.selectedVertex = vertex
-	p.selectedPort = portNumber
-	vertex.setState({
-		name: "selected",
-		params: {
-			selectedPort: portNumber
+		// Transition to state "connecting"
+		// Populate params object with selectedVertex, selectedPort, and a tempEdge objecte
+
+		var p = {}
+
+		p.selectedVertex = vertex
+		p.selectedPort = portNumber
+		vertex.setState({
+			name: "selected",
+			params: {
+				selectedPort: portNumber
+			}
+		})
+
+		p.tempEdge = new KnotEdge().init(this.plane, {
+			from: {
+				vertex: vertex,
+				port: portNumber
+			},
+			to: null
+		}, V(0, 0), V(0, 0), V(0, 0))
+
+		p.tempEdge.setState({
+			name: "underConstruction",
+			params: {
+				endPoint: V(3, 3)
+			}
+		})
+
+		p.tempEdge.redraw()
+		p.tempEdge.moveGraphicsToBack(this.plane)
+		this.stage.update()
+
+		this.state = {
+			name: "connecting",
+			params: p
 		}
-	})
 
-	p.tempEdge = new KnotEdge().init(this.plane, {
-		from: {
-			vertex: vertex,
-			port: portNumber
-		},
-		to: null
-	}, V(0, 0), V(0, 0), V(0, 0))
 
-	p.tempEdge.setState({
-		name: "underConstruction",
-		params: {
-			endPoint: V(3, 3)
+	} else if (this.state.name == "connecting") {
+
+		// Transition back to state "noAction"
+		// Finish up building the temp edge
+
+		this.state.params.tempEdge.removeGraphics(this.plane)
+		var ed = this.state.params.tempEdge
+
+		var finalEdge = new KnotEdge().init(this.plane, {
+			from: ed.getEnds().from,
+			to: {
+				vertex: vertex,
+				port: portNumber
+			}
+		}, ed.getCp1(), ed.getMiddle(), ed.getCp2())
+
+		finalEdge.setState({
+			name: "normal",
+			params: {}
+		})
+
+		this.k.edges.push(finalEdge)
+		finalEdge.redraw()
+
+
+		// Set the vertex back to normal mode
+
+		this.state.params.selectedVertex.setState({
+			name: "normal",
+			params: {}
+		})
+
+		this.state.params.selectedVertex.redraw()
+
+		this.stage.update()
+
+		this.state = {
+			name: "noAction",
+			params: {}
 		}
-	})
 
-	this.state = {
-		name: "connecting",
-		params: p
 	}
 
-	this.state.params.tempEdge.redraw()
+}
 
+Application.prototype.vertexMoved_cb = function(vertex) {
+	var i = 0
+	for (i = 0; i < this.k.edges.length; i ++) {
+		var ends = this.k.edges[i].getEnds()
+		if ((ends.from.vertex == vertex) || (ends.to.vertex == vertex)) {
+			this.k.edges[i].redraw()
+		}
+	}
+	this.stage.update()
 }
 
 Application.prototype.stageMouseMove = function(point) {
@@ -121,6 +202,7 @@ Application.prototype.stageMouseMove = function(point) {
 		this.state.params.tempEdge.setCp2(vp.add(diff.scale(0.75)))
 		this.state.params.tempEdge.state.params.endPoint = point
 		this.state.params.tempEdge.redraw()
+		this.stage.update()
 	}
 }
 

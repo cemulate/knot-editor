@@ -26,3 +26,56 @@ Vec2.prototype.rot90CW = function() {
 function V(x, y) {
 	return new Vec2(x, y)
 }
+
+// *****************************************************************************************************
+//
+// ! States
+//
+// *****************************************************************************************************
+
+/*
+
+Application
+	{
+		name: "noAction",
+		params: {}
+	}
+
+	{
+		name: "connecting",
+		params: {
+			selectedVertex: <KnotVertex>,
+			selectedPort: <int>,
+			tempEdge: <KnotEdge>
+		}
+	}
+
+
+KnotVertex
+	{
+		name: "normal",
+		params: {}
+	}
+
+	{
+		name: "selected",
+		params: {
+			selectedPort: <int>
+		}
+	}
+
+
+KnotEdge
+	{
+		name: "normal",
+		params: {}
+	}
+
+	{
+		name: "underConstruction",
+		params: {
+			endPoint: <Vec2>
+		}
+	}
+
+*/
