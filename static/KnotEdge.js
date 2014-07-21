@@ -24,6 +24,7 @@ KnotEdge.prototype.init = function(container, ends, cp1, middle, cp2) {
 	this.cp2 = cp2
 
 	this._initGraphics(container)
+	this._configureLogic()
 
 	return this
 }
@@ -76,10 +77,12 @@ KnotEdge.prototype.getCp2 = function() {
 
 KnotEdge.prototype.redraw = function() {
 	this._drawTop()
+	this._drawGuides()
 }
 
 KnotEdge.prototype.removeGraphics = function(container) {
 	container.removeChild(this.G.top)
+	container.removeChild(this.G.guide_middle)
 }
 
 KnotEdge.prototype.moveGraphicsToBack = function(container) {
@@ -98,7 +101,14 @@ KnotEdge.prototype._initGraphics = function(container) {
 
 	this._drawTop()
 
+	this.G.guide_middle = new createjs.Shape()
+	this.G.guide_middle.hitArea = new createjs.Shape()
+
+	this._drawGuides()
+
 	container.addChild(this.G.top)
+	container.addChild(this.G.guide_middle)
+
 }
 
 KnotEdge.prototype._drawTop = function() {
@@ -129,5 +139,27 @@ KnotEdge.prototype._drawTop = function() {
 		this.G.top.graphics.f("red").dc(p2.x, p2.y, 0.2)
 		this.G.top.graphics.ss(GLOBALS.strokeWidth * 0.5).s("black").dc(p2.x, p2.y, 0.2)
 	}
+
+}
+
+KnotEdge.prototype._drawGuides = function() {
+	var m = this.getMiddle()
+	this.G.guide_middle.graphics.clear()
+	this.G.guide_middle.graphics.f("white").dc(m.x, m.y, 0.2)
+	this.G.guide_middle.graphics.ss(GLOBALS.strokeWidth * 0.5).s("black").dc(m.x, m.y, 0.2)
+	this.G.guide_middle.hitArea.graphics.clear()
+	this.G.guide_middle.hitArea.graphics.f("black").dc(m.x, m.y, 0.2)
+}
+
+KnotEdge.prototype._configureLogic = function() {
+
+	var self = this
+
+	this.G.guide_middle.addEventListener("pressmove", function(e) {
+		var v = app.coordinates.inverseTransform(e.stageX, e.stageY)
+		self.setMiddle(v)
+		self.redraw()
+		app.stage.update()
+	})
 
 }

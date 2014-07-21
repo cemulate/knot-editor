@@ -45,6 +45,9 @@ KnotVertex.prototype.init = function(container, orient, eventCallbacks) {
 
 KnotVertex.prototype.setState = function(m) {
 	this.state = m
+	if (this.state.name == "normal") {
+		this.clearCorners()
+	}
 }
 
 KnotVertex.prototype.getState = function() {
@@ -165,6 +168,14 @@ KnotVertex.prototype._drawMain = function() {
 		this.G.main.graphics.ss(GLOBALS.strokeWidth).s("black").mt(br.x, br.y).lt(gap, -gap).mt(-gap, gap).lt(tl.x, tl.y)
 	}
 
+}
+
+KnotVertex.prototype.clearCorners = function() {
+	var i = 0
+	for (i = 0; i < this.G.corners.length; i ++) {
+		this.G.corners[i].alpha = 0
+		app.stage.update()
+	}
 }
 
 // *****************************************************************************************************
