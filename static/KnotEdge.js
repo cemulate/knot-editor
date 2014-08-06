@@ -96,20 +96,22 @@ KnotEdge.prototype._drawTop = function() {
 		var p2 = this.ends.to.vertex.getPortPosition(this.ends.to.port)
 	}
 
-	var cp0 = p1.add(p1.sub(this.ends.from.vertex.getPosition()).scale(2.0))
-
-	var cp3 = null
+	var p1TanDir = p1.sub(this.ends.from.vertex.getPosition()).unit()
+	var pathDir = p2.sub(p1).unit()
+	var p2TanDir = null
 	if (this.SM.inState("underConstruction")) {
-		cp3 = p2
+		p2TanDir = pathDir.scale(-1)
 	} else if (this.SM.inState("normal")) {
-		cp3 = p2.add(p2.sub(this.ends.to.vertex.getPosition()).scale(2.0))
+		p2TanDir = p2.sub(this.ends.to.vertex.getPosition()).unit()
 	}
 
-	var len = cp0.sub(p1).mag()
-	var dir = p2.sub(p1).unit()
+	var len = (p2.sub(p1).mag() / 7.0)
 
-	var cp1 = this.middle.add(dir.scale(-len))
-	var cp2 = this.middle.add(dir.scale(len))
+	var cp0 = p1.add(p1TanDir.scale(len))
+	var cp3 = p2.add(p2TanDir.scale(len))
+
+	var cp1 = this.middle.add(pathDir.scale(-len))
+	var cp2 = this.middle.add(pathDir.scale(len))
 
 	this.G.top.graphics.clear()
 
@@ -129,7 +131,7 @@ KnotEdge.prototype._drawGuides = function() {
 	this.G.guide_middle.graphics.f("white").dc(m.x, m.y, 0.2)
 	this.G.guide_middle.graphics.ss(GLOBALS.strokeWidth * 0.5).s("black").dc(m.x, m.y, 0.2)
 	this.G.guide_middle.hitArea.graphics.clear()
-	this.G.guide_middle.hitArea.graphics.f("black").dc(m.x, m.y, 0.2)
+	this.G.guide_middle.hitArea.graphics.f("black").dc(m.x, m.y, 0.8)
 }
 
 KnotEdge.prototype._configureLogic = function() {

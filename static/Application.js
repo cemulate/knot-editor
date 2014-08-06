@@ -41,11 +41,11 @@ function Application(stage, realWidth, realHeight) {
 	this.coordinates.matrix.decompose(this.plane)
 
 	// Draw the coordinate plane onto a container
-	// this.cgrid = new createjs.Container()
-	// drawCoordinatePlane(this.coordinates, this.cgrid, {})
+	this.cgrid = new createjs.Container()
+	drawCoordinatePlane(this.coordinates, this.cgrid, {})
 
 	// Add the grid and the top level container to the stage
-	// this.stage.addChild(this.cgrid)
+	this.stage.addChild(this.cgrid)
 	this.stage.addChild(this.plane)
 
 	this.k = new Knot()
