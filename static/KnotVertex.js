@@ -10,10 +10,16 @@ function KnotVertex() {
 		cornerColor: "#0000FF"
 	}
 
-	this.state = {
-		name: "normal",
-		params: {}
-	}
+	this.SM = new FSM({
+		normal: {},
+		selected: {
+			selectedPort: null
+		}
+	})
+
+	this.SM.transition("normal")
+
+	this.SM.register("selected", "onLeave", callbackToMethod(this, this.clearCorners))
 
 	this._timers = {}
 }
@@ -42,17 +48,6 @@ KnotVertex.prototype.init = function(container, orient, eventCallbacks) {
 // ! Public properties / mutators
 //
 // *****************************************************************************************************
-
-KnotVertex.prototype.setState = function(m) {
-	this.state = m
-	if (this.state.name == "normal") {
-		this.clearCorners()
-	}
-}
-
-KnotVertex.prototype.getState = function() {
-	return this.state
-}
 
 KnotVertex.prototype.setPosition = function(p) {
 	this.G.top.x = p.x
@@ -197,30 +192,38 @@ KnotVertex.prototype._configureLogic = function() {
 
 	for (var i = 0; i < this.G.corners.length; i ++) {
 		this.G.corners[i].addEventListener("mouseover", function(e) {
-			if (self.state.name == "normal") {
+			var n = self.G.corners.indexOf(e.target)
+			if (self.SM.inState("selected") && (self.SM.get("selectedPort") == n)) {
+				return
+			} else {
 				e.target.alpha = 0.5
-				app.stage.update()	
+				app.stage.update()
 			}
 		})
 		
 		this.G.corners[i].addEventListener("mouseout", function(e) {
-			if (self.state.name == "normal") {
+			var n = self.G.corners.indexOf(e.target)
+			if (self.SM.inState("selected") && (self.SM.get("selectedPort") == n)) {
+				return
+			} else {
 				e.target.alpha = 0.0
 				app.stage.update()
 			}
 		})
 		
 		this.G.corners[i].addEventListener("mousedown", function(e) {
-			if (self.state.name == "normal") {
-				var n = self.G.corners.indexOf(e.target)
+			var n = self.G.corners.indexOf(e.target)
+			if (self.SM.inState("selected") && (self.SM.get("selectedPort") == n)) {
+				return
+			} else {
 				self.eventCallbacks.pressedVertexPort(self, n)
 			}
 		})
 	}
 
 	this._timers.selectionBlink = setInterval(function() {
-		if (self.state.name == "selected") {
-			var c = self.G.corners[self.state.params.selectedPort]
+		if (self.SM.inState("selected")) {
+			var c = self.G.corners[self.SM.get("selectedPort")]
 			c.alpha = (c.alpha == 0) ? 0.5 : 0
 			app.stage.update()
 		}

@@ -1,10 +1,4 @@
-function callbackToMethod(target, func) {
-	// Return a closure that applies func 'on' target
-	return function () {
-		func.apply(target, arguments)
-	}
-}
-
+	
 function Knot() {
 
 	this.vertices = []
@@ -17,10 +11,18 @@ function Application(stage, realWidth, realHeight) {
 
 	GLOBALS = {}
 
-	this.state = {
-		name: "noAction",
-		params: {}
-	}
+	this.SM = new FSM({
+		noAction: {
+			cMousePosition: null
+		},
+		connecting: {
+			selectedVertex: null,
+			selectedPort: null,
+			tempEdge: null
+		}
+	})
+
+	this.SM.transition("noAction")
 
 	// ************* Create EaselJS environment **************
 	this.stage = stage
@@ -39,31 +41,12 @@ function Application(stage, realWidth, realHeight) {
 	this.coordinates.matrix.decompose(this.plane)
 
 	// Draw the coordinate plane onto a container
-	this.cgrid = new createjs.Container()
-	drawCoordinatePlane(this.coordinates, this.cgrid, {})
+	// this.cgrid = new createjs.Container()
+	// drawCoordinatePlane(this.coordinates, this.cgrid, {})
 
 	// Add the grid and the top level container to the stage
-	this.stage.addChild(this.cgrid)
+	// this.stage.addChild(this.cgrid)
 	this.stage.addChild(this.plane)
-
-	// var cred = new createjs.Shape()
-	// cred.addEventListener("mouseover", function(e) {
-	// 	console.log("red")
-	// })
-	// cred.graphics.beginFill("red").drawCircle(0, 5, 1)
-	// cred.alpha = 0.3
-
-	// var cblue = new createjs.Shape()
-	// cblue.addEventListener("mouseover", function(e) {
-	// 	console.log("blue")
-	// })
-	// cblue.graphics.beginFill("blue").drawCircle(0, 5, 0.8)
-
-	// this.plane.addChild(cblue)
-	// this.plane.addChild(cred)
-	// this.stage.update()
-
-	// ********************************************************
 
 	this.k = new Knot()
 
@@ -94,54 +77,48 @@ function Application(stage, realWidth, realHeight) {
 
 Application.prototype.pressedVertexPort_cb = function(vertex, portNumber) {
 
-	if (this.state.name == "noAction") {
+	if (this.SM.inState("noAction")) {
 
 		// Transition to state "connecting"
 		// Populate params object with selectedVertex, selectedPort, and a tempEdge objecte
 
-		var p = {}
+		vertex.SM.transition("selected")
+		vertex.SM.set("selectedPort", portNumber)
 
-		p.selectedVertex = vertex
-		p.selectedPort = portNumber
-		vertex.setState({
-			name: "selected",
-			params: {
-				selectedPort: portNumber
-			}
-		})
+		var end = this.SM.get("cMousePosition")
+		var vp = vertex.getPortPosition(portNumber)
+		var diff = end.sub(vp)
+		var mid = vp.add(diff.scale(0.5))
 
-		p.tempEdge = new KnotEdge().init(this.plane, {
+		var tempEdge = new KnotEdge().init(this.plane, {
 			from: {
 				vertex: vertex,
 				port: portNumber
 			},
 			to: null
-		}, V(0, 0), V(0, 0), V(0, 0))
+		}, mid)
 
-		p.tempEdge.setState({
-			name: "underConstruction",
-			params: {
-				endPoint: V(3, 3)
-			}
-		})
+		tempEdge.SM.transition("underConstruction")
+		tempEdge.SM.set("endPoint", end)
 
-		p.tempEdge.redraw()
-		p.tempEdge.moveGraphicsToBack(this.plane)
+		tempEdge.redraw()
+		tempEdge.moveGraphicsToBack(this.plane)
 		this.stage.update()
 
-		this.state = {
-			name: "connecting",
-			params: p
-		}
+		this.SM.transition("connecting")
+		this.SM.set("selectedVertex", vertex)
+		this.SM.set("selectedPort", portNumber)
+		this.SM.set("tempEdge", tempEdge)
 
 
-	} else if (this.state.name == "connecting") {
+	} else if (this.SM.inState("connecting")) {
 
 		// Transition back to state "noAction"
 		// Finish up building the temp edge
 
-		this.state.params.tempEdge.removeGraphics(this.plane)
-		var ed = this.state.params.tempEdge
+		var ed = this.SM.get("tempEdge")
+
+		ed.removeGraphics(this.plane)
 
 		var finalEdge = new KnotEdge().init(this.plane, {
 			from: ed.getEnds().from,
@@ -149,12 +126,9 @@ Application.prototype.pressedVertexPort_cb = function(vertex, portNumber) {
 				vertex: vertex,
 				port: portNumber
 			}
-		}, ed.getCp1(), ed.getMiddle(), ed.getCp2())
+		}, ed.getMiddle())
 
-		finalEdge.setState({
-			name: "normal",
-			params: {}
-		})
+		finalEdge.SM.transition("normal")
 
 		this.k.edges.push(finalEdge)
 		finalEdge.redraw()
@@ -162,19 +136,15 @@ Application.prototype.pressedVertexPort_cb = function(vertex, portNumber) {
 
 		// Set the vertex back to normal mode
 
-		this.state.params.selectedVertex.setState({
-			name: "normal",
-			params: {}
-		})
+		var vert = this.SM.get("selectedVertex")
 
-		this.state.params.selectedVertex.redraw()
+		vert.SM.transition("normal")
+
+		vert.redraw()
 
 		this.stage.update()
 
-		this.state = {
-			name: "noAction",
-			params: {}
-		}
+		this.SM.transition("noAction")
 
 	}
 
@@ -192,16 +162,16 @@ Application.prototype.vertexMoved_cb = function(vertex) {
 }
 
 Application.prototype.stageMouseMove = function(point) {
-	if (this.state.name == "connecting") {
-		var vp = this.state.params.selectedVertex.getPortPosition(this.state.params.selectedPort)
+	if (this.SM.inState("noAction")) {
+		this.SM.set("cMousePosition", point)
+	}
+	if (this.SM.inState("connecting")) {
+		var vp = this.SM.get("selectedVertex").getPortPosition(this.SM.get("selectedPort"))
 		var diff = point.sub(vp)
-		var diffL = diff.rot90CCW()
-		var diffR = diff.rot90CW()
-		this.state.params.tempEdge.setCp1(vp.add(diff.scale(0.25)))
-		this.state.params.tempEdge.setMiddle(vp.add(diff.scale(0.5)))
-		this.state.params.tempEdge.setCp2(vp.add(diff.scale(0.75)))
-		this.state.params.tempEdge.state.params.endPoint = point
-		this.state.params.tempEdge.redraw()
+		var ed = this.SM.get("tempEdge")
+		ed.setMiddle(vp.add(diff.scale(0.5)))
+		ed.SM.set("endPoint", point)
+		ed.redraw()
 		this.stage.update()
 	}
 }

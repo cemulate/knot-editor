@@ -2,26 +2,25 @@ function KnotEdge() {
 
 	this.ends = {from: null, to: null}
 	
-	this.cp1 = V(0, 0)
 	this.middle = V(0, 0)
-	this.cp2 = V(0, 0)
 
 	this.G = null
 
-	this.state = {
-		name: "underConstruction",
-		params: {
-			endPoint: V(0, 0)
+	this.SM = new FSM({
+		normal: {},
+		underConstruction: {
+			endPoint: null
 		}
-	}
+	})
+
+	this.SM.transition("underConstruction")
+	this.SM.set("endPoint", V(0, 0))
 
 }
 
-KnotEdge.prototype.init = function(container, ends, cp1, middle, cp2) {
+KnotEdge.prototype.init = function(container, ends, middle) {
 	this.ends = ends
-	this.cp1 = cp1
 	this.middle = middle
-	this.cp2 = cp2
 
 	this._initGraphics(container)
 	this._configureLogic()
@@ -35,14 +34,6 @@ KnotEdge.prototype.init = function(container, ends, cp1, middle, cp2) {
 //
 // *****************************************************************************************************
 
-KnotEdge.prototype.setState = function(s) {
-	this.state = s
-}
-
-KnotEdge.prototype.getState = function() {
-	return this.state
-}
-
 KnotEdge.prototype.setEnds = function(ends) {
 	this.ends = ends
 }
@@ -51,28 +42,12 @@ KnotEdge.prototype.getEnds = function() {
 	return this.ends
 }
 
-KnotEdge.prototype.setCp1 = function(p) {
-	this.cp1 = p
-}
-
-KnotEdge.prototype.getCp1 = function() {
-	return this.cp1
-}
-
 KnotEdge.prototype.setMiddle = function(p) {
 	this.middle = p
 }
 
 KnotEdge.prototype.getMiddle = function() {
 	return this.middle
-}
-
-KnotEdge.prototype.setCp2 = function(p) {
-	this.cp2 = p
-}
-
-KnotEdge.prototype.getCp2 = function() {
-	return this.cp2
 }
 
 KnotEdge.prototype.redraw = function() {
@@ -115,27 +90,33 @@ KnotEdge.prototype._drawTop = function() {
 
 	var p1 = this.ends.from.vertex.getPortPosition(this.ends.from.port)
 	var p2 = null
-	if (this.state.name == "underConstruction") {
-		p2 = this.state.params.endPoint.sub(V(0.3, 0.3))
-	} else if (this.state.name == "normal") {
+	if (this.SM.inState("underConstruction")) {
+		p2 = this.SM.get("endPoint").sub(V(0.3, 0.3))
+	} else if (this.SM.inState("normal")) {
 		var p2 = this.ends.to.vertex.getPortPosition(this.ends.to.port)
 	}
 
-	var cp0 = p1.add(p1.sub(this.ends.from.vertex.getPosition()))
+	var cp0 = p1.add(p1.sub(this.ends.from.vertex.getPosition()).scale(2.0))
 
 	var cp3 = null
-	if (this.state.name == "underConstruction") {
+	if (this.SM.inState("underConstruction")) {
 		cp3 = p2
-	} else if (this.state.name == "normal") {
-		cp3 = p2.add(p2.sub(this.ends.to.vertex.getPosition()))
+	} else if (this.SM.inState("normal")) {
+		cp3 = p2.add(p2.sub(this.ends.to.vertex.getPosition()).scale(2.0))
 	}
+
+	var len = cp0.sub(p1).mag()
+	var dir = p2.sub(p1).unit()
+
+	var cp1 = this.middle.add(dir.scale(-len))
+	var cp2 = this.middle.add(dir.scale(len))
 
 	this.G.top.graphics.clear()
 
-	this.G.top.graphics.ss(GLOBALS.strokeWidth).s("black").mt(p1.x, p1.y).bt(cp0.x, cp0.y, this.cp1.x, this.cp1.y, this.middle.x, this.middle.y)
-															.bt(this.cp2.x, this.cp2.y, cp3.x, cp3.y, p2.x, p2.y)
+	this.G.top.graphics.ss(GLOBALS.strokeWidth).s("black").mt(p1.x, p1.y).bt(cp0.x, cp0.y, cp1.x, cp1.y, this.middle.x, this.middle.y)
+															.bt(cp2.x, cp2.y, cp3.x, cp3.y, p2.x, p2.y)
 
-	if (this.state.name == "underConstruction") {
+	if (this.SM.inState("underConstruction")) {
 		this.G.top.graphics.f("red").dc(p2.x, p2.y, 0.2)
 		this.G.top.graphics.ss(GLOBALS.strokeWidth * 0.5).s("black").dc(p2.x, p2.y, 0.2)
 	}
