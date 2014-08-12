@@ -49,7 +49,7 @@ function Application(stage, realWidth, realHeight) {
 
 	// Add the grid and the top level container to the stage
 	this.stage.addChild(this.stageBG)
-	this.stage.addChild(this.cgrid)
+	// this.stage.addChild(this.cgrid)
 	this.stage.addChild(this.plane)
 
 	this.k = new Knot()
