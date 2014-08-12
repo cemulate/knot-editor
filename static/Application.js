@@ -27,6 +27,9 @@ function Application(stage, realWidth, realHeight) {
 	// ************* Create EaselJS environment **************
 	this.stage = stage
 
+	this.stageBG = new createjs.Shape()
+	this.stageBG.graphics.f("#FFFFFF").r(0, 0, realWidth, realHeight)
+
 	// Top level container
 	this.plane = new createjs.Container()
 
@@ -45,29 +48,21 @@ function Application(stage, realWidth, realHeight) {
 	drawCoordinatePlane(this.coordinates, this.cgrid, {})
 
 	// Add the grid and the top level container to the stage
+	this.stage.addChild(this.stageBG)
 	this.stage.addChild(this.cgrid)
 	this.stage.addChild(this.plane)
 
 	this.k = new Knot()
 
-	var v = new KnotVertex().init(this.plane, 1, {
-		pressedVertexPort: callbackToMethod(this, this.pressedVertexPort_cb),
-		vertexMoved: callbackToMethod(this, this.vertexMoved_cb)
-	})
-	this.k.vertices.push(v)
-
-	var v2 = new KnotVertex().init(this.plane, 1, {
-		pressedVertexPort: callbackToMethod(this, this.pressedVertexPort_cb),
-		vertexMoved: callbackToMethod(this, this.vertexMoved_cb)
-	})
-	v2.setPosition(V(5, 5))
-	v2.redraw()
-	this.k.vertices.push(v2)
-
 	var self = this
 	stage.on("stagemousemove", function(e) {
 		var v = self.coordinates.inverseTransform(e.stageX, e.stageY)
 		self.stageMouseMove(v)
+	})
+
+	this.stageBG.addEventListener("mousedown", function(e) {
+		var v = self.coordinates.inverseTransform(e.stageX, e.stageY)
+		self.mouseDown(v)
 	})
 
 	stage.enableMouseOver()
@@ -177,10 +172,6 @@ Application.prototype.vertexMoved_cb = function(vertex, old, newP) {
 
 			ed.setMiddle(newMiddle)
 
-			if (ends.from.vertex != ends.to.vertex) {
-	
-			}
-
 			ed.redraw()
 		}
 	}
@@ -200,6 +191,18 @@ Application.prototype.stageMouseMove = function(point) {
 		ed.redraw()
 		this.stage.update()
 	}
+}
+
+Application.prototype.mouseDown = function(point) {
+	var v = new KnotVertex().init(this.plane, 1, {
+		pressedVertexPort: callbackToMethod(this, this.pressedVertexPort_cb),
+		vertexMoved: callbackToMethod(this, this.vertexMoved_cb)
+	})
+	this.k.vertices.push(v)
+
+	v.setPosition(point)
+	v.redraw()
+	this.stage.update()
 }
 
 

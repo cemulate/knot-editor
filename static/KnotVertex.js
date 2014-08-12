@@ -28,7 +28,7 @@ function KnotVertex() {
 //
 // Event Callbacks:
 // 		pressedVertexPort(theVertex, portPressed)
-//		vertexMoved(theVertex)
+//		vertexMoved(theVertex, old, new)
 //
 // *****************************************************************************************************
 
@@ -183,12 +183,19 @@ KnotVertex.prototype._configureLogic = function() {
 
 	var self = this
 
+	this.G.main.addEventListener("click", function(e) {
+		self.orient = -self.orient
+		self.redraw()
+		app.stage.update()
+	})
+
 	this.G.main.addEventListener("pressmove", function(e) {
 		var v = app.coordinates.inverseTransform(e.stageX, e.stageY)
 		var old = self.getPosition()
 		self.setPosition(v)
 		self.eventCallbacks.vertexMoved(self, old, v)
 		app.stage.update()
+
 	})
 
 	for (var i = 0; i < this.G.corners.length; i ++) {
@@ -213,6 +220,7 @@ KnotVertex.prototype._configureLogic = function() {
 		})
 		
 		this.G.corners[i].addEventListener("mousedown", function(e) {
+			console.log(e)
 			var n = self.G.corners.indexOf(e.target)
 			if (self.SM.inState("selected") && (self.SM.get("selectedPort") == n)) {
 				return
