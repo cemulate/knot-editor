@@ -113,7 +113,9 @@ KnotEdge.prototype._drawTop = function() {
 		p2TanDir = p2.sub(this.ends.to.vertex.getPosition()).unit()
 	}
 
-	var len = (p2.sub(p1).mag() / 7.0)
+	var len1 = p2.sub(p1).mag()
+	var len2 = Math.max(this.middle.sub(p1).mag(), this.middle.sub(p2).mag())
+	var len = Math.max(len1, len2) / 7.0
 
 	var cp0 = p1.add(p1TanDir.scale(len))
 	var cp3 = p2.add(p2TanDir.scale(len))
