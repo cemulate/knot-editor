@@ -150,12 +150,33 @@ Application.prototype.pressedVertexPort_cb = function(vertex, portNumber) {
 
 }
 
-Application.prototype.vertexMoved_cb = function(vertex) {
+Application.prototype.vertexMoved_cb = function(vertex, old, newP) {
 	var i = 0
 	for (i = 0; i < this.k.edges.length; i ++) {
-		var ends = this.k.edges[i].getEnds()
+		var ed = this.k.edges[i]
+		var ends = ed.getEnds()
 		if ((ends.from.vertex == vertex) || (ends.to.vertex == vertex)) {
-			this.k.edges[i].redraw()
+
+			if (ends.from.vertex != ends.to.vertex) {
+				var oldFrom = (ends.from.vertex == vertex) ? old : ed.getFromPosition()
+				var oldTo = (ends.to.vertex == vertex) ? old : ed.getToPosition()
+
+				var fromTo = oldTo.sub(oldFrom)
+				var fromMid = ed.getMiddle().sub(oldFrom)
+
+				var mult = (fromMid.project(fromTo).mag()) / fromTo.mag()
+				if (mult > 1.0) {
+					mult = 0.0
+				}
+
+				var delta = newP.sub(old)
+
+				var newMiddle = ed.getMiddle().add(delta.scale(mult))
+
+				ed.setMiddle(newMiddle)
+			}
+
+			ed.redraw()
 		}
 	}
 	this.stage.update()

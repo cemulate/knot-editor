@@ -42,6 +42,14 @@ KnotEdge.prototype.getEnds = function() {
 	return this.ends
 }
 
+KnotEdge.prototype.getFromPosition = function() {
+	return this.ends.from.vertex.getPortPosition(this.ends.from.port)
+}
+
+KnotEdge.prototype.getToPosition = function() {
+	return this.ends.to.vertex.getPortPosition(this.ends.to.port)
+}
+
 KnotEdge.prototype.setMiddle = function(p) {
 	this.middle = p
 }

@@ -185,8 +185,9 @@ KnotVertex.prototype._configureLogic = function() {
 
 	this.G.main.addEventListener("pressmove", function(e) {
 		var v = app.coordinates.inverseTransform(e.stageX, e.stageY)
+		var old = self.getPosition()
 		self.setPosition(v)
-		self.eventCallbacks.vertexMoved(self)
+		self.eventCallbacks.vertexMoved(self, old, v)
 		app.stage.update()
 	})
 
