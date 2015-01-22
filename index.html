@@ -1,72 +1,77 @@
 <!DOCTYPE html>
-<head>
 
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width">
+<html class="no-js" lang="en" >
 
-<title>Foundation 4</title>
-
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-
-
-<link rel="stylesheet" href="/static/foundation-5.0.2/css/foundation.css">
-<script src="/static/foundation-5.0.2/js/vendor/custom.modernizr.js"></script>
-
-<script src="http://code.createjs.com/easeljs-0.7.0.min.js"></script>
-<script src="/static/CoordinateSystemE.js"></script>
-<script src="/static/util.js"></script>
-<script src="/static/KnotVertex.js"></script>
-<script src="/static/KnotEdge.js"></script>
-<script src="/static/Application.js"></script>
-
-<script>
-
-	$(document).ready(function() {
-
-		$(window).trigger("resize")
-
-		stage = new createjs.Stage("stage")
-
-		app = new Application(stage, $("#stage").width(), $("#stage").height())
+	<head>
+	
+		<meta charset="utf-8">
+		<!-- If you delete this meta tag World War Z will become a reality -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		
-	})
+		<title>Knot Editor</title>
 
-	$(window).resize(function() {
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 
-		$("#stage").width($(window).innerWidth())
-		$("#stage").height($(window).innerHeight())
+		<!-- If you are using the CSS version, only link these 2 files, you may add app.css to use for your overrides if you like -->
+		<link rel="stylesheet" href="static/foundation-5.5.0/css/normalize.css">
+		<link rel="stylesheet" href="static/foundation-5.5.0/css/foundation.css">
 
-		// Setting the "CSS" width/height only scales/stretches the canvas. We need to set its raw width/height
-		// to set the "number of pixels" in the canvas
+		<script src="static/foundation-5.5.0/js/vendor/modernizr.js"></script>
+
+	</head>
+
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,400italic' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="static/gh-fork-ribbon.css">
+
+	<!-- JS Dependencies -->
+	<script src="static/util.js"></script>
+	<script src="static/raphael-min.js"></script>
+	<script src="static/raphael.free_transform.js"></script>
+
+	<!-- Non-foundation custom CSS -->
+	<link rel="stylesheet" href="static/appStyle.css"> 
+
+	<!-- Load Ractive 
+	<script src='http://cdn.ractivejs.org/latest/ractive.min.js'></script> -->
+
+	<!-- Main application code -->
+	<script src="static/app.js"></script>
+
+	<script type="text/javascript">
+
+		$(document).ready(function () {
+
+			var w = $("#raphaelContainer").width();
+			var h = $(window).innerHeight() - $("#header").height() - 5;
+
+			var app = new KnotEditor($("#raphaelContainer").get(0), w, h);
+
+		});
+
+	</script>
+
+	<body>
+
+		<div class="github-fork-ribbon-wrapper right">
+		    <div class="github-fork-ribbon">
+		        <a href="https://github.com/cemulate/genki-vocab">Fork me on GitHub</a>
+		    </div>
+		</div>
+
+		<div id="header" class="row">
+			<h3>Knot Editor</h3>
+			<hr>
+		</div>
+
+		<div id="raphaelContainer" class="row full-width"></div>
+
+		<script src="static/foundation-5.5.0/js/foundation.min.js"></script>
 		
-		$("#stage").get(0).width = $("#stage").width()
-		$("#stage").get(0).height = $("#stage").height()
+		<script>
+			$(document).foundation();
+		</script>
 
-	})
-
-</script>
-
-</head>
+	</body>
 
 
-<body>
-
-	<!-- CODE -->
-
-	<canvas id="stage" style="margin:0;
-	   padding:0; 
-       position:absolute; 
-       top:0; 
-       left:0">
-	</canvas>
-
-
-	<script src="/static/foundation-5.0.2/js/foundation.min.js"></script>
-
-	<script>
-		$(document).foundation();
- 	</script>
-
-
-</body>
 </html>
