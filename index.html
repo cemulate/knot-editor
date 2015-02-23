@@ -13,20 +13,18 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 
 		<!-- If you are using the CSS version, only link these 2 files, you may add app.css to use for your overrides if you like -->
-		<link rel="stylesheet" href="static/foundation-5.5.0/css/normalize.css">
-		<link rel="stylesheet" href="static/foundation-5.5.0/css/foundation.css">
+		<link rel="stylesheet" href="static/foundation-5.5.1/css/normalize.css">
+		<link rel="stylesheet" href="static/foundation-5.5.1/css/foundation.css">
 
-		<script src="static/foundation-5.5.0/js/vendor/modernizr.js"></script>
+		<script src="static/foundation-5.5.1/js/vendor/modernizr.js"></script>
 
 	</head>
 
 	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,400italic' rel='stylesheet' type='text/css'>
-	<link rel="stylesheet" href="static/gh-fork-ribbon.css">
 
 	<!-- JS Dependencies -->
 	<script src="static/util.js"></script>
-	<script src="static/raphael-min.js"></script>
-	<script src="static/raphael.free_transform.js"></script>
+	<script src="static/snap-0.3.0/snap.svg.js"></script>
 
 	<!-- Non-foundation custom CSS -->
 	<link rel="stylesheet" href="static/appStyle.css"> 
@@ -41,10 +39,15 @@
 
 		$(document).ready(function () {
 
-			var w = $("#raphaelContainer").width();
+			var w = $("#snapContainer").width();
 			var h = $(window).innerHeight() - $("#header").height() - 5;
 
-			var app = new KnotEditor($("#raphaelContainer").get(0), w, h);
+			$("#snapContainer").height(h);
+
+			var s = Snap("#svg");
+			var c = s.circle(150, 150, 150);
+			c.drag();
+			console.log(c);
 
 		});
 
@@ -52,20 +55,16 @@
 
 	<body>
 
-		<div class="github-fork-ribbon-wrapper right">
-		    <div class="github-fork-ribbon">
-		        <a href="https://github.com/cemulate/genki-vocab">Fork me on GitHub</a>
-		    </div>
-		</div>
-
 		<div id="header" class="row">
 			<h3>Knot Editor</h3>
 			<hr>
 		</div>
 
-		<div id="raphaelContainer" class="row full-width"></div>
+		<div id="snapContainer" class="row full-width">
+			<svg id="svg" style="width:100%; height:100%"></svg>
+		</div>
 
-		<script src="static/foundation-5.5.0/js/foundation.min.js"></script>
+		<script src="static/foundation-5.5.1/js/foundation.min.js"></script>
 		
 		<script>
 			$(document).foundation();
