@@ -44,14 +44,27 @@
 
 			$("#snapContainer").height(h);
 
-			var s = Snap("#svg");
+			var paper = Snap("#svg");
 			
-			var n = s.group();
-			n.add(s.path(-20, -20, 20, 20));
-			n.add(s.path(-20, 20, 20, -20));
+			n = paper.group();
+			n.add(paper.line(-20, -20, 20, 20));
+			n.add(paper.line(-20, 20, 20, -20));
+			n.add(paper.circle(0, 0, 20));
+
+			n.selectAll("line").forEach(function (val) {
+				val.attr({
+					"stroke": "black",
+					"stroke-width": 5
+				});
+			});
+
+			n.selectAll("circle").forEach(function (val) {
+				val.attr({
+					"opacity": 0
+				});
+			});
 
 			n.drag();
-
 
 		});
 
