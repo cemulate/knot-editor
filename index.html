@@ -45,9 +45,13 @@
 			$("#snapContainer").height(h);
 
 			var s = Snap("#svg");
-			var c = s.circle(150, 150, 150);
-			c.drag();
-			console.log(c);
+			
+			var n = s.group();
+			n.add(s.path(-20, -20, 20, 20));
+			n.add(s.path(-20, 20, 20, -20));
+
+			n.drag();
+
 
 		});
 
