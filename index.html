@@ -25,6 +25,7 @@
 	<!-- JS Dependencies -->
 	<script src="static/util.js"></script>
 	<script src="static/snap-0.3.0/snap.svg.js"></script>
+	<script src="static/CoordinateSystem.js"></script>
 
 	<!-- Non-foundation custom CSS -->
 	<link rel="stylesheet" href="static/appStyle.css"> 
@@ -45,26 +46,17 @@
 			$("#snapContainer").height(h);
 
 			var paper = Snap("#svg");
-			
-			n = paper.group();
-			n.add(paper.line(-20, -20, 20, 20));
-			n.add(paper.line(-20, 20, 20, -20));
-			n.add(paper.circle(0, 0, 20));
 
-			n.selectAll("line").forEach(function (val) {
-				val.attr({
-					"stroke": "black",
-					"stroke-width": 5
-				});
-			});
+			// var cs = new CoordinateSystem(w, h);
+			// cs.autoSetFromWidth(100);
 
-			n.selectAll("circle").forEach(function (val) {
-				val.attr({
-					"opacity": 0
-				});
-			});
+			v = new Vertex();
+			v.realize(paper);
 
-			n.drag();
+			v2 = new Vertex();
+			v2.realize(paper);
+
+
 
 		});
 
